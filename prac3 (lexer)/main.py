@@ -10,14 +10,14 @@ def is_number(s):
 
 
 def is_kword(word):
-    return re.fullmatch("[_a-zA-Z][_a-zA-Z0-9]*", word)
+    return word == "for" or word == "do"
 
 
 def lexer(file0):
     state = "H"
     file = open(file0, "r")
     # 0 ключевые слова 1 разделители 2 числа 3 идентификаторы 4 равно
-    table = [[], ['(', ')', ';', '=', '<', '>'], [], []]
+    table = [['for', 'do'], ['(', ')', ';', '=', '<', '>'], [], []]
     c = file.read(1)
     while c != "":
         if state == "H":
@@ -68,16 +68,17 @@ def lexer(file0):
                     word += c
                 else:
                     break
-            if is_kword(word):
-                state = "H"
+            state = "H"
+            if not is_kword(word):
                 if word in table[3]:
                     print(3, table[3].index(word))
                 else:
                     print(3, len(table[3]))
                     table[3].append(word)
-
             else:
-                state = "ERR"
+                if word == "for":
+                    print(0, table[0].index(word))
+
         elif state == "ERR":
             raise Exception(state + ": " + c)
     print(table)
