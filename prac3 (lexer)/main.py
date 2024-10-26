@@ -37,7 +37,7 @@ def lexer(file0):
     """
     state = "H"  
     file = open(file0, "r")
-    table = [key_words, ['=', '<>', '<=', '<', '>', '>=', '*', '/', '+', "-", "{", "}", ";", ",", "[", "]"], [], []]
+    table = [key_words, ['=', '<>', '<=', '<', '>', '>=', '*', '/', '+', "-", "{", "}", "(", ")", ";", ",", "[", "]"], [], []]
     c = file.read(1)
 
     while c != "":  
@@ -114,6 +114,6 @@ def lexer(file0):
 
 if __name__ == '__main__':
     try:
-        lexer('prac3 (lexer)/prog.txt')  
+        lexer('kurs/prog.txt')
     except Exception as e:
         print(e)
