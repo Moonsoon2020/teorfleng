@@ -5,20 +5,24 @@ import string
 def is_number(s):
     """Проверяет, является ли строка числом в различных форматах."""
     s = s.lower()
-    if re.fullmatch(r'[-+]?[0-9]*\.?[0-9]+(e[-+]?[0-9]+)?', s):
-        return 3  
+    if re.fullmatch(r'[0-9]*\.[0-9]+(e[-+][0-9]+)?', s):
+        return 3
+    if re.fullmatch(r'[0-9]+e[+-][0-9]+', s):
+        return 2
     elif re.fullmatch(r'[01]+b', s):
         return 4  
     elif re.fullmatch(r'[0-7]+o', s):
         return 5  
     elif re.fullmatch(r'[0-9a-fA-F]+h', s):
         return 6  
-    elif re.fullmatch(r'[0-9]+', s):
+    elif re.fullmatch(r'[0-9]+d', s):
         return 2
     return 0  
 
 
-key_words = ["for", "do", "mult", "div", "and", "or"]
+key_words = [
+    "or", "and", "not", "program", "var", "begin", "end", "integer", "real", "boolean", "as", "if", "else", "then",
+    "for", "to", "do", "while", "read", "write"]
 
 
 def is_kword(word):
@@ -33,19 +37,17 @@ def lexer(file0):
     """
     state = "H"  
     file = open(file0, "r")
-    table = [key_words, ['=', '<>', '<=', '<', '>', '>=', '(', ')', ';', '+', "-", "!"], [], []]
-    c = file.read(1)  
+    table = [key_words, ['=', '<>', '<=', '<', '>', '>=', '*', '/', '+', "-", "{", "}", ";", ",", "[", "]"], [], []]
+    c = file.read(1)
 
     while c != "":  
         if state == "H":
             if c in " \n\r\t":  
                 c = file.read(1)
                 continue
-            elif c == ":":  
-                state = "ASGN"
             elif c == "_" or c in string.ascii_letters:  # Идентификатор
                 state = "ID"
-            elif c in string.digits:  # Число
+            elif c in string.digits + ".":  # Число
                 state = "NM"
             else:  # Разделители
                 state = "DLM"
@@ -55,7 +57,7 @@ def lexer(file0):
             num = c
             while True:
                 c = file.read(1)
-                if c in string.digits or c in "abcdABCDFfHheE.-+":
+                if c in string.digits or c in "abcdABCDFfHheEoO.-+":
                     num += c
                 else:
                     break
@@ -66,19 +68,22 @@ def lexer(file0):
                 state = "H"
             else:
                 state = "ERR"
-
-        elif state == "ASGN":  
-            if file.read(1) == "=":
-                print(5, 0)  
+            continue
+        elif state == "DLM":
+            text = c
+            c = file.read(1)
+            text += c
+            if text in table[1]:
+                print(1, table[1].index(text))
+                c = file.read(1)
                 state = "H"
+                continue
+            elif text[0] in table[1]:
+                print(1, table[1].index(text[0]))
+                state = "H"
+                continue
             else:
                 state = "ERR"
-
-        elif state == "DLM":  
-            if c in table[1]:
-                print(1, table[1].index(c))  
-            state = "H"
-
         elif state == "ID":  
             word = c
             while True:
@@ -101,7 +106,8 @@ def lexer(file0):
             raise Exception(f"Ошибка в состоянии {state}: {c}")
 
         c = file.read(1)  
-
+    if state == "ERR":
+        raise Exception(f"Ошибка в состоянии {state}: {c}")
     print(table)  
     return table
 
@@ -111,4 +117,3 @@ if __name__ == '__main__':
         lexer('prac3 (lexer)/prog.txt')  
     except Exception as e:
         print(e)
-# + - or mult div and !

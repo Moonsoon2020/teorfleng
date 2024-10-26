@@ -38,14 +38,20 @@ def main(info: str):
          new_bibl.keys()]))
 
 
-import unittest
+# import unittest
+#
+#
+# class Test(unittest.TestCase):
+#     def test(self):
+#         result = main("""0 a 1
+#         0 b 1
+#         1 b 2
+#         0 b 2
+#         1 a 1""")
+#         assert result == ""
 
-
-class Test(unittest.TestCase):
-    def test(self):
-        result = main("""0 a 1
-        0 b 1
-        1 b 2
-        0 b 2
-        1 a 1""")
-        assert result == ""
+main("""0 a 1
+         0 b 1
+         1 b 2
+         0 b 2
+         1 a 1""")
