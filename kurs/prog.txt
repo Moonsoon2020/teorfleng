@@ -1,0 +1,17 @@
+for i = 1d; i <= 10d; i = i + 1d do
+{
+    sum = sum + 3.14e+2;
+    binary = 101b;
+    octal = 123O;
+    hex = 8A2Fh;
+    result = a + b * c - d;
+    temp = x <> 20d;
+    is_valid = 1b;
+    fl = a or b;
+    flag = 9Bh;
+    _customVariable = my_var >= 10d;
+  and, or not,  true, false, program
+}
+{
+kkkkkk
+}
