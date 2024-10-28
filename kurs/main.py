@@ -147,6 +147,7 @@ def parse_mult(tokens, table):
     flag = [table[0].index("false"), table[0].index("true")]
     if tokens[0][0] == 0 and tokens[0][1] in flag:
         return
+
     if tokens[0][0] == 1 and tokens[0][1] == table[1].index("("):
         tokens.pop(0)
         parse_expression(tokens, table)
