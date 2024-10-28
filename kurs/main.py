@@ -1,6 +1,5 @@
 import re
 import string
-from os import write
 
 
 def is_number(s):
@@ -23,7 +22,7 @@ def is_number(s):
 
 key_words = [
     "or", "and", "not", "program", "var", "begin", "end", "integer", "real", "boolean", "as", "if", "else", "then",
-    "for", "to", "do", "while", "read", "write"]
+    "for", "to", "do", "while", "read", "write", "true", "false"]
 
 
 def is_kword(word):
@@ -122,28 +121,13 @@ def lexer(file0):
     return table, result
 
 
-# def remove_comments(tokens, table):
-#     result = []
-#     flag = False
-#     for token in tokens:
-#         if token[0] == 1 and token[1] == table[1].index("}") and flag:
-#             flag = False
-#             continue
-#         if token[0] == 1 and token[1] == table[1].index("{"):
-#             flag = True
-#             continue
-#         if not flag:
-#             result.append(token)
-#     return result
-# def desc_enum(tokens, table):
-#     if tokens[0][0] ==
-
-def desc(tokens, table):
+def parse_declaration(tokens, table):
+    """Парсинг объявления переменной."""
     tokens.pop(0)
     if tokens[0][0] == 3:
         tokens.pop(0)
         if tokens[0][0] == 1 and tokens[0][1] == table[1].index(","):
-            desc(tokens, table)
+            parse_declaration(tokens, table)
         elif tokens[0][0] == 1 and tokens[0][1] == table[1].index(":"):
             tokens.pop(0)
             if tokens[0][0] == 0 and (tokens[0][1] == table[0].index("integer")
@@ -151,90 +135,220 @@ def desc(tokens, table):
                                       or tokens[0][1] == table[0].index("boolean")):
                 tokens.pop(0)
                 return
-            raise Exception()
+            raise Exception(3)  # Ошибка типа данных
         else:
-            raise Exception()
+            raise Exception(4)  # Ошибка синтаксиса объявления
     else:
-        raise Exception()
+        raise Exception(5)  # Ошибка идентификатора
 
 
-def if_(tokens, table):
-    pass
+def parse_mult(tokens, table):
+    flag = [table[0].index("false"), table[0].index("true")]
+    if tokens[0][0] == 0 and tokens[0][1] in flag:
+        return
+    if tokens[0][0] == 1 and tokens[0][1] == table[1].index("("):
+        tokens.pop(0)
+        parse_expression(tokens, table)
+        if tokens[0][0] == 1 and tokens[0][1] == table[1].index(")"):
+            tokens.pop(0)
+            return
+        else:
+            raise Exception(104)
+    if tokens[0][0] == 2 or tokens[0][0] == 3:
+        tokens.pop(0)
+        return
+    if tokens[0][0] == 0 and tokens[0][1] == table[0].index("not"):
+        tokens.pop(0)
+        parse_mult(tokens, table)
+        return
+    raise Exception(105)
 
 
-def for_(tokens, table):
-    pass
+def parse_slg(tokens, table):
+    parse_mult(tokens, table)
+    if ((tokens[0][0] == 1 and (tokens[0][1] == table[1].index("*") or tokens[0][1] == table[1].index("/")))
+            or (tokens[0][0] == 0 and (tokens[0][1] == table[0].index("and")))):
+        tokens.pop(0)
+        parse_mult(tokens, table)
 
 
-def while_(tokens, table):
-    pass
+def parse_operand(tokens, table):
+    parse_slg(tokens, table)
+    if ((tokens[0][0] == 1 and (tokens[0][1] == table[1].index("+") or tokens[0][1] == table[1].index("-")))
+            or (tokens[0][0] == 0 and (tokens[0][1] == table[0].index("or")))):
+        tokens.pop(0)
+        parse_slg(tokens, table)
 
 
-def pr(tokens, table):
-    pass
+def parse_expression(tokens, table):
+    """Парсинг выражения."""
+    parse_operand(tokens, table)
+    if tokens[0][0] == 1 and tokens[0][1] in [table[1].index(op) for op in ["=", "<>", ">", "<", ">=", "<="]]:
+        tokens.pop(0)
+        parse_expression(tokens, table)
 
 
-def read_(tokens, table):
-    pass
+def parse_if(tokens, table):
+    """Парсинг конструкции if."""
+    parse_expression(tokens, table)
+    if tokens[0][0] == 0 and tokens[0][1] == table[0].index("then"):
+        tokens.pop(0)
+        parse_operations(tokens, table)
+        if tokens[0][0] == 0 and tokens[0][1] == table[0].index("else"):
+            tokens.pop(0)
+            parse_operations(tokens, table)
+    else:
+        raise Exception(6)  # Ошибка if-then
 
 
-def write_(tokens, table):
-    pass
+def parse_for(tokens, table):
+    if tokens[0][0] != 3:
+        raise Exception(108)
+    tokens.pop(0)
+    parse_eq(tokens, table)
+    if tokens[0][0] == 0 and tokens[0][1] == table[0].index("to"):
+        tokens.pop(0)
+        parse_expression(tokens, table)
+        if tokens[0][0] == 0 and tokens[0][1] == table[0].index("do"):
+            tokens.pop(0)
+            parse_operations(tokens, table)
+        else:
+            raise Exception(108)
+    else:
+        raise Exception(109)
 
 
-def operations(tokens, table):
+def parse_while(tokens, table):
+    parse_expression(tokens, table)
+    if tokens[0][0] == 0 and tokens[0][1] == table[0].index("do"):
+        tokens.pop(0)
+        parse_operations(tokens, table)
+
+
+def parse_eq(tokens, table):
+    token = tokens.pop(0)
+    if token[0] == 0 and token[1] == table[0].index("as"):
+        parse_expression(tokens, table)
+    else:
+        raise Exception(109)
+
+
+def parse_read(tokens, table):
+    opentoken = tokens.pop(0)
+    if opentoken[0] == 1 and opentoken[1] == table[1].index("("):
+        ind_token = tokens.pop(0)
+        if ind_token[0] == 3:
+            while tokens[0][0] == 1 and tokens[0][1] == table[1].index(","):
+                tokens.pop(0)
+                if tokens[0][0] == 3:
+                    tokens.pop(0)
+                else:
+                    raise Exception(111)
+            if tokens[0][0] == 1 and tokens[0][1] == table[1].index(")"):
+                tokens.pop(0)
+            else:
+                raise Exception(110)
+        else:
+            raise Exception(111)
+    else:
+        raise Exception(112)
+
+
+def parse_write(tokens, table):
+    if not (tokens[0][0] == 1 and tokens[0][1] == table[1].index("(")):
+        raise Exception(113)
+    tokens.pop(0)
+    parse_expression(tokens, table)
+    while tokens[0][0] == 1 and tokens[0][1] == table[1].index(","):
+        tokens.pop(0)
+        parse_expression(tokens, table)
+    if not (tokens[0][0] == 1 and tokens[0][1] == table[1].index(")")):
+        raise Exception(114)
+    tokens.pop(0)
+
+
+def composite_operations(tokens, table):
     token = tokens.pop(0)
     if token[0] == 1 and token[1] == table[1].index("["):
-        operations(tokens, table)
-    elif token[0] == 1 and token[1] == table[1].index("]"):
-        operations(tokens, table)
+        composite_operations(tokens, table)
     elif token[0] == 0 and token[1] == table[0].index("if"):
-        if_(tokens, table)
+        parse_if(tokens, table)
         # operations(tokens, table)
     elif token[0] == 0 and token[1] == table[0].index("for"):
-        for_(tokens, table)
+        parse_for(tokens, table)
         # operations(tokens, table)
     elif token[0] == 0 and token[1] == table[0].index("while"):
-        while_(tokens, table)
+        parse_while(tokens, table)
         # operations(tokens, table)
     elif token[0] == 3:
-        pr(tokens, table)
+        parse_eq(tokens, table)
+        # operations(tokens, table)
+    elif token[0] == 0 and token[1] == table[0].index("read"):
+        parse_read(tokens, table)
+    elif token[0] == 0 and token[1] == table[0].index("write"):
+        parse_write(tokens, table)
+    if tokens[0][0] == 1 and tokens[0][1] == table[1].index("]"):
+        tokens.pop(0)
+        return
+    if tokens[0][0] == 1 and tokens[0][1] == table[1].index(":"):
+        tokens.pop(0)
+        composite_operations(tokens, table)
+    else:
+        raise Exception(116)
+
+
+def parse_operations(tokens, table):
+    token = tokens.pop(0)
+    if token[0] == 1 and token[1] == table[1].index("["):
+        composite_operations(tokens, table)
+    elif token[0] == 0 and token[1] == table[0].index("if"):
+        parse_if(tokens, table)
+        # operations(tokens, table)
+    elif token[0] == 0 and token[1] == table[0].index("for"):
+        parse_for(tokens, table)
+        # operations(tokens, table)
+    elif token[0] == 0 and token[1] == table[0].index("while"):
+        parse_while(tokens, table)
+        # operations(tokens, table)
+    elif token[0] == 3:
+        parse_eq(tokens, table)
         # operations(tokens, table)
     elif token[0] == 1 and token[1] == table[1].index(";"):
-        operations(tokens, table)
+        parse_operations(tokens, table)
     elif token[0] == 0 and token[1] == table[0].index("read"):
-        read_(tokens, table)
+        parse_read(tokens, table)
     elif token[0] == 0 and token[1] == table[0].index("write"):
-        write_(tokens, table)
+        parse_write(tokens, table)
     else:
-        raise Exception()
+        raise Exception(118)
 
 
 def syntax(tokens, table):
-    # tokens = remove_comments(tokens, table)
+    """Основная синтаксическая проверка программы."""
     token = tokens.pop(0)
     while token[0] == 0 and token[1] == table[0].index("program"):
         token = tokens[0]
         if token[0] == 0 and token[1] == table[0].index("var"):
-            desc(tokens, table)
+            parse_declaration(tokens, table)
             token = tokens.pop(0)
             if token[0] == 0 and token[1] == table[0].index("begin"):
-                tokens.pop(0)
                 while True:
                     if len(tokens) == 0:
-                        raise Exception()
+                        raise Exception(7)  # Ошибка конца программы
                     elif tokens[0][0] == 0 and tokens[0][1] == table[0].index("end"):
+                        tokens.pop(0)
                         break
-                    operations(tokens, table)
-            print()
+                    parse_operations(tokens, table)
         else:
-            raise Exception()
+            raise Exception(8)  # Ошибка в синтаксисе после program
+    if len(tokens) != 0:
+        raise Exception(9)  # Ошибка неиспользованных токенов
 
 
 if __name__ == '__main__':
     try:
-        var = lexer('prac3 (lexer)/prog.txt')
-        print(*var, sep='\n')
-        print(syntax(var[1], var[0]))
+        tokens_and_table = lexer('kurs/prog.txt')
+        print(*tokens_and_table, sep='\n')
+        print(syntax(tokens_and_table[1], tokens_and_table[0]))
     except Exception as e:
-        print(e)
+        print(f"{str(e)} err")
