@@ -144,6 +144,8 @@ def parse_declaration(tokens, table):
 
 def parse_mult(tokens, table):
     """Парсинг члена операнда."""
+
+
     flag = [table[0].index("false"), table[0].index("true")]
     if tokens[0][0] == 0 and tokens[0][1] in flag:
         return
