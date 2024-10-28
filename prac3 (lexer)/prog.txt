@@ -1,17 +1,8 @@
-for i = 1d; i <= 10d; i = i + 1d do
-{
-    sum = sum + 3.14e+2;
-    binary = 101b;
-    octal = 123O;
-    hex = 8A2Fh;
-    result = a + b * c - d;
-    temp = x <> 20d;
-    is_valid = 1b;
-    fl = a or b;
-    flag = 9Bh;
-    _customVariable = my_var >= 10d;
-  and, or not,  true, false, program
-}
-{
-kkkkkk
-}
+program var aa0, dddf, jj : integer begin
+for i as 0d to i < 10d do i as i + 1d;
+aa as 0d;
+while aa > 0d do [a as 0d : b as 0d];
+if aa <= 0d then read(dddf);
+if 0d >= 1d then write(aa * 2H) else write(10o);
+aa0 as 89d
+end {this comment}
