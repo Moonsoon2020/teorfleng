@@ -121,11 +121,15 @@ def lexer(file0):
     return table, result
 
 
+var = []
+
+
 def parse_declaration(tokens, table):
     """Парсинг объявления переменной."""
     tokens.pop(0)
     if tokens[0][0] == 3:
-        tokens.pop(0)
+        token = tokens.pop(0)
+        var.append(token[1])
         if tokens[0][0] == 1 and tokens[0][1] == table[1].index(","):
             parse_declaration(tokens, table)
         elif tokens[0][0] == 1 and tokens[0][1] == table[1].index(":"):
@@ -155,7 +159,7 @@ def parse_mult(tokens, table):
             return
         else:
             raise Exception(6)
-    if token[0] == 3:
+    if token[0] == 3 and token[1] in var:
         return
     if token[0] == 2:
         return
@@ -304,7 +308,7 @@ def parse_operations(tokens, table):
         parse_for(tokens, table)
     elif token[0] == 0 and token[1] == table[0].index("while"):
         parse_while(tokens, table)
-    elif token[0] == 3:
+    elif token[0] == 3 and token[1] in var:
         parse_eq(tokens, table)
     elif token[0] == 1 and token[1] == table[1].index(";"):
         parse_operations(tokens, table)
@@ -342,6 +346,7 @@ if __name__ == '__main__':
     try:
         tokens_and_table = lexer('kurs/prog.txt')
         print(*tokens_and_table, sep='\n')
-        print(syntax(tokens_and_table[1], tokens_and_table[0]))
+        syntax(tokens_and_table[1], tokens_and_table[0])
+        print("Ошибки не обнаружены")
     except Exception as e:
         print(f"{str(e)} err")
