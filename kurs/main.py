@@ -6,17 +6,17 @@ def is_number(s):
     """Проверяет, является ли строка числом в различных форматах."""
     s = s.lower()
     if re.fullmatch(r'[0-9]*\.[0-9]+(e[-+][0-9]+)?', s):
-        return 3
+        return 1
     if re.fullmatch(r'[0-9]+e[+-][0-9]+', s):
         return 2
     elif re.fullmatch(r'[01]+b', s):
-        return 4
+        return 3
     elif re.fullmatch(r'[0-7]+o', s):
-        return 5
+        return 4
     elif re.fullmatch(r'[0-9a-fA-F]+h', s):
-        return 6
+        return 5
     elif re.fullmatch(r'[0-9]+d', s):
-        return 2
+        return 6
     return 0
 
 
@@ -98,7 +98,7 @@ def lexer(file0):
             word = c
             while True:
                 c = file.read(1)
-                if c == "_" or c in string.ascii_letters or c in string.digits:
+                if (c == "_" or c in string.ascii_letters or c in string.digits) and c != "":
                     word += c
                 else:
                     break
@@ -145,22 +145,21 @@ def parse_declaration(tokens, table):
 def parse_mult(tokens, table):
     """Парсинг члена операнда."""
     flag = [table[0].index("false"), table[0].index("true")]
-    if tokens[0][0] == 0 and tokens[0][1] in flag:
+    token = tokens.pop(0)
+    if token[0] == 0 and token[1] in flag:
         return
-
-    if tokens[0][0] == 1 and tokens[0][1] == table[1].index("("):
-        tokens.pop(0)
+    if token[0] == 1 and token[1] == table[1].index("("):
         parse_expression(tokens, table)
         if tokens[0][0] == 1 and tokens[0][1] == table[1].index(")"):
             tokens.pop(0)
             return
         else:
             raise Exception(6)
-    if tokens[0][0] == 2 or tokens[0][0] == 3:
-        tokens.pop(0)
+    if token[0] == 3:
         return
-    if tokens[0][0] == 0 and tokens[0][1] == table[0].index("not"):
-        tokens.pop(0)
+    if token[0] == 2:
+        return
+    if token[0] == 0 and token[1] == table[0].index("not"):
         parse_mult(tokens, table)
         return
     raise Exception(7)
@@ -275,16 +274,12 @@ def composite_operations(tokens, table):
         composite_operations(tokens, table)
     elif token[0] == 0 and token[1] == table[0].index("if"):
         parse_if(tokens, table)
-        # operations(tokens, table)
     elif token[0] == 0 and token[1] == table[0].index("for"):
         parse_for(tokens, table)
-        # operations(tokens, table)
     elif token[0] == 0 and token[1] == table[0].index("while"):
         parse_while(tokens, table)
-        # operations(tokens, table)
     elif token[0] == 3:
         parse_eq(tokens, table)
-        # operations(tokens, table)
     elif token[0] == 0 and token[1] == table[0].index("read"):
         parse_read(tokens, table)
     elif token[0] == 0 and token[1] == table[0].index("write"):
@@ -305,16 +300,12 @@ def parse_operations(tokens, table):
         composite_operations(tokens, table)
     elif token[0] == 0 and token[1] == table[0].index("if"):
         parse_if(tokens, table)
-        # operations(tokens, table)
     elif token[0] == 0 and token[1] == table[0].index("for"):
         parse_for(tokens, table)
-        # operations(tokens, table)
     elif token[0] == 0 and token[1] == table[0].index("while"):
         parse_while(tokens, table)
-        # operations(tokens, table)
     elif token[0] == 3:
         parse_eq(tokens, table)
-        # operations(tokens, table)
     elif token[0] == 1 and token[1] == table[1].index(";"):
         parse_operations(tokens, table)
     elif token[0] == 0 and token[1] == table[0].index("read"):
