@@ -155,7 +155,7 @@ def parse_mult(tokens, table):
             tokens.pop(0)
             return
         else:
-            raise Exception(104)
+            raise Exception(6)
     if tokens[0][0] == 2 or tokens[0][0] == 3:
         tokens.pop(0)
         return
@@ -163,7 +163,7 @@ def parse_mult(tokens, table):
         tokens.pop(0)
         parse_mult(tokens, table)
         return
-    raise Exception(105)
+    raise Exception(7)
 
 
 def parse_slg(tokens, table):
@@ -200,7 +200,7 @@ def parse_if(tokens, table):
             tokens.pop(0)
             parse_operations(tokens, table)
     else:
-        raise Exception(6)  # Ошибка if-then
+        raise Exception(8)  # Ошибка if-then
 
 
 def parse_for(tokens, table):
@@ -215,9 +215,9 @@ def parse_for(tokens, table):
             tokens.pop(0)
             parse_operations(tokens, table)
         else:
-            raise Exception(108)
+            raise Exception(9)
     else:
-        raise Exception(109)
+        raise Exception(10)
 
 
 def parse_while(tokens, table):
@@ -232,7 +232,7 @@ def parse_eq(tokens, table):
     if token[0] == 0 and token[1] == table[0].index("as"):
         parse_expression(tokens, table)
     else:
-        raise Exception(109)
+        raise Exception(11)
 
 
 def parse_read(tokens, table):
@@ -245,27 +245,27 @@ def parse_read(tokens, table):
                 if tokens[0][0] == 3:
                     tokens.pop(0)
                 else:
-                    raise Exception(111)
+                    raise Exception(12)
             if tokens[0][0] == 1 and tokens[0][1] == table[1].index(")"):
                 tokens.pop(0)
             else:
-                raise Exception(110)
+                raise Exception(13)
         else:
-            raise Exception(111)
+            raise Exception(14)
     else:
-        raise Exception(112)
+        raise Exception(15)
 
 
 def parse_write(tokens, table):
     if not (tokens[0][0] == 1 and tokens[0][1] == table[1].index("(")):
-        raise Exception(113)
+        raise Exception(16)
     tokens.pop(0)
     parse_expression(tokens, table)
     while tokens[0][0] == 1 and tokens[0][1] == table[1].index(","):
         tokens.pop(0)
         parse_expression(tokens, table)
     if not (tokens[0][0] == 1 and tokens[0][1] == table[1].index(")")):
-        raise Exception(114)
+        raise Exception(17)
     tokens.pop(0)
 
 
@@ -296,7 +296,7 @@ def composite_operations(tokens, table):
         tokens.pop(0)
         composite_operations(tokens, table)
     else:
-        raise Exception(116)
+        raise Exception(18)
 
 
 def parse_operations(tokens, table):
@@ -322,7 +322,7 @@ def parse_operations(tokens, table):
     elif token[0] == 0 and token[1] == table[0].index("write"):
         parse_write(tokens, table)
     else:
-        raise Exception(118)
+        raise Exception(19)
 
 
 def syntax(tokens, table):
@@ -336,15 +336,15 @@ def syntax(tokens, table):
             if token[0] == 0 and token[1] == table[0].index("begin"):
                 while True:
                     if len(tokens) == 0:
-                        raise Exception(7)  # Ошибка конца программы
+                        raise Exception(20)  # Ошибка конца программы
                     elif tokens[0][0] == 0 and tokens[0][1] == table[0].index("end"):
                         tokens.pop(0)
                         break
                     parse_operations(tokens, table)
         else:
-            raise Exception(8)  # Ошибка в синтаксисе после program
+            raise Exception(21)  # Ошибка в синтаксисе после program
     if len(tokens) != 0:
-        raise Exception(9)  # Ошибка неиспользованных токенов
+        raise Exception(22)  # Ошибка неиспользованных токенов
 
 
 if __name__ == '__main__':

@@ -5,4 +5,5 @@ while aa > 0d do [a as 0d : b as 0d];
 if aa <= 0d then read(dddf);
 if 0d >= 1d then write(aa * 2H) else write(10o);
 aa0 as 89d
+
 end {this comment}
