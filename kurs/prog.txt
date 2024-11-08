@@ -1,4 +1,4 @@
-program var i, aa, a, b, aa0 : integer begin
+program var integer i, aa, a, b, aa  begin
 for i as 0d to i < 10d do i as i + 1d;
 aa as 0d;
 while aa > 0d do [a as 0d : b as 0d];

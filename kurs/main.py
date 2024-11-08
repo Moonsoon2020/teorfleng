@@ -48,7 +48,7 @@ def lexer(file0):
             if c in " \n\r\t":
                 c = file.read(1)
                 continue
-            elif c == "_" or c in string.ascii_letters:  # Идентификатор
+            elif c in string.ascii_letters:  # Идентификатор
                 state = "ID"
             elif c in string.digits + ".":  # Число
                 state = "NM"
@@ -113,11 +113,11 @@ def lexer(file0):
                 result.append([0, table[0].index(word)])
             continue
         elif state == "ERR":
-            raise Exception(f"Ошибка в состоянии {state}: {c}")
+            raise Exception(f"Ошибка в состоянии {state}: {c}", 1)
 
         c = file.read(1)
     if state == "ERR":
-        raise Exception(f"Ошибка в состоянии {state}: {c}")
+        raise Exception(f"Ошибка в состоянии {state}: {c}", 1)
     return table, result
 
 
@@ -127,23 +127,22 @@ var = []
 def parse_declaration(tokens, table):
     """Парсинг объявления переменной."""
     tokens.pop(0)
-    if tokens[0][0] == 3:
-        token = tokens.pop(0)
-        var.append(token[1])
-        if tokens[0][0] == 1 and tokens[0][1] == table[1].index(","):
-            parse_declaration(tokens, table)
-        elif tokens[0][0] == 1 and tokens[0][1] == table[1].index(":"):
-            tokens.pop(0)
-            if tokens[0][0] == 0 and (tokens[0][1] == table[0].index("integer")
-                                      or tokens[0][1] == table[0].index("real")
-                                      or tokens[0][1] == table[0].index("boolean")):
+    if tokens[0][0] == 0 and (tokens[0][1] == table[0].index("integer")
+                              or tokens[0][1] == table[0].index("real")
+                              or tokens[0][1] == table[0].index("boolean")):
+        tokens.pop(0)
+        while tokens[0][0] == 3:
+            token = tokens.pop(0)
+            var.append(token[1])
+            if tokens[0][0] == 1 and tokens[0][1] == table[1].index(","):
                 tokens.pop(0)
-                return
-            raise Exception(3)  # Ошибка типа данных
-        else:
-            raise Exception(4)  # Ошибка синтаксиса объявления
+                continue
+            else:
+                break
+        if len(var) < 1:
+            raise Exception(3)
     else:
-        raise Exception(5)  # Ошибка идентификатора
+        raise Exception(4)
 
 
 def parse_mult(tokens, table):
@@ -158,7 +157,7 @@ def parse_mult(tokens, table):
             tokens.pop(0)
             return
         else:
-            raise Exception(6)
+            raise Exception(5)
     if token[0] == 3 and token[1] in var:
         return
     if token[0] == 2:
@@ -166,7 +165,7 @@ def parse_mult(tokens, table):
     if token[0] == 0 and token[1] == table[0].index("not"):
         parse_mult(tokens, table)
         return
-    raise Exception(7)
+    raise Exception(6)
 
 
 def parse_slg(tokens, table):
@@ -203,12 +202,12 @@ def parse_if(tokens, table):
             tokens.pop(0)
             parse_operation(tokens, table)
     else:
-        raise Exception(8)  # Ошибка if-then
+        raise Exception(7)  # Ошибка if-then
 
 
 def parse_for(tokens, table):
     if tokens[0][0] != 3:
-        raise Exception(108)
+        raise Exception(8)
     tokens.pop(0)
     parse_eq(tokens, table)
     if tokens[0][0] == 0 and tokens[0][1] == table[0].index("to"):
