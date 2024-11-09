@@ -1,9 +1,8 @@
-program var integer i, aa, a, b, aa  begin
+program var integer i, aa0, a, b, aa  begin
 for i as 0d to i < 10d do i as i + 1d;
-aa as 0d;
+y as 0d;
 while aa > 0d do [a as 0d : b as 0d];
 if aa <= 0d then read(dddf);
 if 0d >= 1d then write(aa * 2H) else write(10o);
 aa0 as 89d
-
 end {this comment}
