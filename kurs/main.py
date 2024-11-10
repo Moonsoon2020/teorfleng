@@ -1,5 +1,3 @@
-import sys
-
 from lexer import lexer
 from syntax import syntax
 

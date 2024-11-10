@@ -60,7 +60,7 @@ def lexer(file0):
             num = c
             while True:
                 c = file.read(1)
-                if c in string.digits or c in "abcdABCDFfHheEoO.-+":
+                if (c in string.digits or c in "abcdABCDFfHheEoO.-+") and c != "":
                     num += c
                 else:
                     break
@@ -87,6 +87,7 @@ def lexer(file0):
                     while c != "}":
                         c = file.read(1)
                     c = file.read(1)
+                    state = "H"
                     continue
                 else:
                     result.append([1, table[1].index(text[0])])
