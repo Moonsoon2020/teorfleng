@@ -6,23 +6,23 @@ def is_number(s):
     """Проверяет, является ли строка числом в различных форматах."""
     s = s.lower()
     if re.fullmatch(r'[0-9]*\.[0-9]+(e[-+][0-9]+)?', s):
-        return 3
+        return 1
     if re.fullmatch(r'[0-9]+e[+-][0-9]+', s):
         return 2
     elif re.fullmatch(r'[01]+b', s):
-        return 4  
+        return 3
     elif re.fullmatch(r'[0-7]+o', s):
-        return 5  
+        return 4
     elif re.fullmatch(r'[0-9a-fA-F]+h', s):
-        return 6  
+        return 5
     elif re.fullmatch(r'[0-9]+d', s):
-        return 2
-    return 0  
+        return 6
+    return 0
 
 
 key_words = [
     "or", "and", "not", "program", "var", "begin", "end", "integer", "real", "boolean", "as", "if", "else", "then",
-    "for", "to", "do", "while", "read", "write"]
+    "for", "to", "do", "while", "read", "write", "true", "false"]
 
 
 def is_kword(word):
@@ -35,35 +35,38 @@ def lexer(file0):
     Лексер, анализирующий текстовый файл, распознающий числа, идентификаторы,
     ключевые слова и разделители.
     """
-    state = "H"  
-    file = open(file0, "r")
-    table = [key_words, ['=', '<>', '<=', '<', '>', '>=', '*', '/', '+', "-", "{", "}", "(", ")", ";", ",", "[", "]"], [], []]
+    result = []
+    state = "H"
+    file = open(file0)
+    table = [key_words,
+             ['=', '<>', '<=', '<', '>', '>=', '*', '/', '+', "-", "{", "}", ";", ",", "[", "]", "(", ")", ":", ","],
+             [], []]
     c = file.read(1)
 
-    while c != "":  
+    while c != "":
         if state == "H":
-            if c in " \n\r\t":  
+            if c in " \n\r\t":
                 c = file.read(1)
                 continue
-            elif c == "_" or c in string.ascii_letters:  # Идентификатор
+            elif c in string.ascii_letters:  # Идентификатор
                 state = "ID"
-            elif c in string.digits + ".":  # Число
+            elif c in string.digits:  # Число
                 state = "NM"
             else:  # Разделители
                 state = "DLM"
             continue
 
-        elif state == "NM":  
+        elif state == "NM":
             num = c
             while True:
                 c = file.read(1)
-                if c in string.digits or c in "abcdABCDFfHheEoO.-+":
+                if (c in string.digits or c in "abcdABCDFfHheEoO.-+") and c != "":
                     num += c
                 else:
                     break
             num_type = is_number(num)
-            if num_type:  
-                print(2, len(table[2]))  
+            if num_type:
+                result.append([2, len(table[2])])
                 table[2].append(num)
                 state = "H"
             else:
@@ -74,42 +77,49 @@ def lexer(file0):
             c = file.read(1)
             text += c
             if text in table[1]:
-                print(1, table[1].index(text))
+                result.append([1, table[1].index(text)])
                 c = file.read(1)
                 state = "H"
                 continue
             elif text[0] in table[1]:
-                print(1, table[1].index(text[0]))
-                state = "H"
-                continue
+                if text[0] == "{":
+                    c = file.read(1)
+                    while c != "}":
+                        c = file.read(1)
+                    c = file.read(1)
+                    state = "H"
+                    continue
+                else:
+                    result.append([1, table[1].index(text[0])])
+                    state = "H"
+                    continue
             else:
                 state = "ERR"
-        elif state == "ID":  
+        elif state == "ID":
             word = c
             while True:
                 c = file.read(1)
-                if c == "_" or c in string.ascii_letters or c in string.digits:
+                if (c in string.ascii_letters or c in string.digits) and c != "":
                     word += c
                 else:
                     break
             state = "H"
-            if not is_kword(word):  
+            if not is_kword(word):
                 if word in table[3]:
-                    print(3, table[3].index(word))  
+                    result.append([3, table[3].index(word)])
                 else:
-                    print(3, len(table[3]))  
+                    result.append([3, len(table[3])])
                     table[3].append(word)
             else:
-                print(0, table[0].index(word))  
+                result.append([0, table[0].index(word)])
+            continue
+        elif state == "ERR":
+            raise Exception(1)
 
-        elif state == "ERR":  
-            raise Exception(f"Ошибка в состоянии {state}: {c}")
-
-        c = file.read(1)  
+        c = file.read(1)
     if state == "ERR":
-        raise Exception(f"Ошибка в состоянии {state}: {c}")
-    print(table)  
-    return table
+        raise Exception(0)
+    return table, result
 
 
 if __name__ == '__main__':
