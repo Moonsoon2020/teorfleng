@@ -5,19 +5,20 @@ import string
 def is_number(s):
     """Проверяет, является ли строка числом в различных форматах."""
     s = s.lower()
-    if re.fullmatch(r'[0-9]*\.[0-9]+(e[-+][0-9]+)?', s):
+    if re.fullmatch(r'[0-9]+d?', s):
         return 1
-    if re.fullmatch(r'[0-9]+e[+-][0-9]+', s):
+    elif re.fullmatch(r'[0-9]*\.[0-9]+(e[-+][0-9]+)?', s):
         return 2
-    elif re.fullmatch(r'[01]+b', s):
+    elif re.fullmatch(r'[0-9]+e[+-][0-9]+', s):
         return 3
-    elif re.fullmatch(r'[0-7]+o', s):
+    elif re.fullmatch(r'[01]+b', s):
         return 4
-    elif re.fullmatch(r'[0-9a-fA-F]+h', s):
+    elif re.fullmatch(r'[0-7]+o', s):
         return 5
-    elif re.fullmatch(r'[0-9]+d', s):
+    elif re.fullmatch(r'[0-9a-f]+h', s):
         return 6
     return 0
+
 
 
 key_words = [
